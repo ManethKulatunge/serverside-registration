@@ -4,7 +4,7 @@ const app = express();
 const port = process.env.PORT || 5000;
 const cors = require("cors")
 const fs = require("fs");
-const json2csv = require("json2csv");
+let csvToJson = require("convert-csv-to-json");
 
 app.use(cors())
 app.use(express.json())
@@ -16,7 +16,6 @@ app.get("/", (req, res) => {
 
 app.post("/csv", (req, res) => {
   console.log(req.body.fname)
-  res.send("hello");
   let newLine = "\r\n";
 
   let fields = ["fname", "lname", "email", "phone", "book", "os"];
@@ -30,14 +29,15 @@ app.post("/csv", (req, res) => {
     header: false,
   };
 
-  fs.stat("file.csv", function (err, stat) {
+  let name = "mini6.csv"
+  fs.stat(name, function (err, stat) {
     if (err == null) {
       console.log("File exists");
 
       //write the actual data and end with newline
       let csv = appendThis + newLine;
 
-      fs.appendFile("file.csv", csv, function (err) {
+      fs.appendFile(name, csv, function (err) {
         if (err) throw err;
         console.log('The "data to append" was appended to file!');
       });
@@ -46,12 +46,19 @@ app.post("/csv", (req, res) => {
       console.log("New file, just writing headers");
       fields = fields + newLine;
 
-      fs.writeFile("file.csv", fields, function (err) {
+      fs.writeFile(name, fields, function (err) {
         if (err) throw err;
         console.log("file saved");
       });
     }
   });
+  let json = csvToJson.getJsonFromCsv("mini6.csv");
+  res.send(json)
+});
+
+app.get("/csvtojson", (req, res) => {
+  let getJson = csvToJson.getJsonFromCsv("mini6.csv");
+  res.send(getJson)
 });
 
 app.listen(port, () => {
